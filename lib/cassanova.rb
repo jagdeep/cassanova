@@ -53,13 +53,13 @@ module Cassanova
     ### Query Methods ###
 
     def self.where conditions={}
-      query = Cassa::Query.new(:table_name => self.name.underscore.pluralize)
+      query = Cassanova::Query.new(:table_name => self.name.underscore.pluralize)
       query.where(conditions)
       return query
     end
 
     def self.select *attrs
-      query = Cassa::Query.new(:table_name => self.name.underscore.pluralize)
+      query = Cassanova::Query.new(:table_name => self.name.underscore.pluralize)
       query.select(attrs)
       return query
     end
@@ -102,19 +102,19 @@ module Cassanova
         query << "#{key} = #{val}"
       end
       self.queries ||= []
-      self.queries << Cassa::Query.new(:query_type => "where", :query => query.join(" AND "))
+      self.queries << Cassanova::Query.new(:query_type => "where", :query => query.join(" AND "))
       return self
     end
 
     def select *attrs
       self.queries ||= []
-      self.queries << Cassa::Query.new(:query_type => "select", :query => attrs.join(','))
+      self.queries << Cassanova::Query.new(:query_type => "select", :query => attrs.join(','))
       return self
     end
 
     def limit i
       cq = compiled_query + " LIMIT #{i}"
-      Cassa::Query.parse(Cassa::Model.session.execute(cq), table_name)
+      Cassanova::Query.parse(Cassanova::Model.session.execute(cq), table_name)
     end
 
     def first
@@ -122,14 +122,14 @@ module Cassanova
     end
 
     def all
-       Cassa::Query.parse(Cassa::Model.session.execute(compiled_query), table_name)
+       Cassanova::Query.parse(Cassanova::Model.session.execute(compiled_query), table_name)
     end
 
     def count
       cq = compiled_query
       selects = cq.split("select ")[1].split(" from")[0]
       cq = cq.gsub(selects, "COUNT(*)")
-      Cassa::Model.session.execute(cq).rows.first['count']
+      Cassanova::Model.session.execute(cq).rows.first['count']
     end
 
     def self.parse response, table_name
