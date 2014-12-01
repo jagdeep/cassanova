@@ -1,8 +1,12 @@
-= cassanova
-
-Description goes here.
+= Cassanova
 
 This is a work in progress guys.
+
+== Credit
+
+A big thanks goes to -
+
+* {Maropost}[http://maropost.com] for giving me an opportunity to extract and release this functionality as a gem for the larger community
 
 == Contributing to cassanova
  
@@ -18,4 +22,5 @@ This is a work in progress guys.
 
 Copyright (c) 2014 Jagdeep Singh. See LICENSE.txt for
 further details.
+
 
