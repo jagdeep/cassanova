@@ -27,6 +27,7 @@ Gem::Specification.new do |s|
     "README.rdoc",
     "Rakefile",
     "VERSION",
+    "cassanova.gemspec",
     "lib/cassanova.rb",
     "test/helper.rb",
     "test/test_cassanova.rb"
