@@ -68,7 +68,7 @@ module Cassanova
       obj = self.new(data)
       cols = obj.attributes.keys
       vals = cols.map{|k| obj.send(k) }
-      query = "INSERT INTO campaign_sends (#{cols.join(', ')}) VALUES (#{vals.map{'?'}.join(', ')})"
+      query = "INSERT INTO #{self.name.underscore.pluralize} (#{cols.join(', ')}) VALUES (#{vals.map{'?'}.join(', ')})"
       query = Cassanova::Model.session.prepare(query)
       Cassanova::Model.session.execute(*[query, vals].flatten)
     end
