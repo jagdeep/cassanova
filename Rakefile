@@ -17,8 +17,8 @@ Jeweler::Tasks.new do |gem|
   gem.name = "cassanova"
   gem.homepage = "http://github.com/jagdeep/cassanova"
   gem.license = "MIT"
-  gem.summary = %Q{TODO: one-line summary of your gem}
-  gem.description = %Q{TODO: longer description of your gem}
+  gem.summary = %Q{Get cassandra to play nice with rails.}
+  gem.description = %Q{Use cassandra with rails adding active record style methods using active model.}
   gem.email = "jagdeepkh@gmail.com"
   gem.authors = ["Jagdeep Singh"]
   # dependencies defined in Gemfile
