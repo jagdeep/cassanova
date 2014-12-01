@@ -20,7 +20,7 @@ module Cassanova
 
     def attributes
       attrs = {}
-      cassandra_columns.each{|m| attrs[m] = send(m) }
+      cassandra_columns.each{|m| attrs[m.to_s] = send(m) }
       return attrs
     end
 
@@ -62,6 +62,15 @@ module Cassanova
       query = Cassanova::Query.new(:table_name => self.name.underscore.pluralize)
       query.select(attrs)
       return query
+    end
+
+    def self.create data={}
+      obj = self.new(data)
+      cols = obj.attributes.keys
+      vals = cols.map{|k| obj.send(k) }
+      query = "INSERT INTO campaign_sends (#{cols.join(', ')}) VALUES (#{vals.map{'?'}.join(', ')})"
+      query = Cassanova::Model.session.prepare(query)
+      Cassanova::Model.session.execute(*[query, vals].flatten)
     end
 
     ### Config Methods ###
