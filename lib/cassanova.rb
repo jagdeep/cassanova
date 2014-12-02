@@ -15,7 +15,9 @@ module Cassanova
     cattr_reader :cassandra_columns, :cassandra_hosts, :cassandra_database
 
     def initialize data={}
-      cassandra_columns.each{|c| send("#{c}=", data[c.to_s]) }
+      params = {}
+      data.each{|k,v| params[k.to_s] = v }
+      cassandra_columns.each{|c| send("#{c}=", params[c.to_s]) }
     end
 
     def attributes
@@ -66,11 +68,37 @@ module Cassanova
 
     def self.create data={}
       obj = self.new(data)
-      cols = obj.attributes.keys
-      vals = cols.map{|k| obj.send(k) }
-      query = "INSERT INTO #{self.name.underscore.pluralize} (#{cols.join(', ')}) VALUES (#{vals.map{'?'}.join(', ')})"
-      query = Cassanova::Model.session.prepare(query)
-      Cassanova::Model.session.execute(*[query, vals].flatten)
+      obj.created_at = Time.zone.now if obj.attributes.include?("created_at")
+      obj.updated_at = Time.zone.now if obj.attributes.include?("updated_at")
+      if obj.valid?
+        cols = obj.attributes.keys
+        vals = cols.map{|k| obj.send(k) }
+        query = "INSERT INTO #{self.name.underscore.pluralize} (#{cols.join(', ')}) VALUES (#{vals.map{'?'}.join(', ')})"
+        begin
+          query = Cassanova::Model.session.prepare(query)
+          result = Cassanova::Model.session.execute(*[query, vals].flatten)
+          return result.class == Cassandra::Results::Void
+        rescue Exception => e
+          obj.errors.add(:cassandra, e.message)
+          return obj
+        end
+      else
+        return obj
+      end
+    end
+
+    ### Relationship Methods ###
+
+    def self.belongs_to model_name
+      define_method(model_name.to_s) do
+        model_name.to_s.classify.constantize.where(:id => send("#{model_name}_id")).first
+      end
+    end
+
+    def self.has_many table_name
+      define_method(table_name.to_s) do
+        table_name.to_s.classify.constantize.where("#{self.class.name.underscore}_id" => send("id")).first
+      end
     end
 
     ### Config Methods ###
@@ -139,6 +167,13 @@ module Cassanova
       selects = cq.split("select ")[1].split(" from")[0]
       cq = cq.gsub(selects, "COUNT(*)")
       Cassanova::Model.session.execute(cq).rows.first['count']
+    end
+
+    def destroy
+      cq = compiled_query
+      cq = "delete from " + cq.split("from")[1]
+      result = Cassanova::Model.session.execute(cq)
+      return result.class == Cassandra::Results::Void
     end
 
     def self.parse response, table_name
