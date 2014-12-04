@@ -159,7 +159,14 @@ module Cassanova
     end
 
     def all
-       Cassanova::Query.parse(Cassanova::Model.session.execute(compiled_query), table_name)
+      results = Cassanova::Model.session.execute(compiled_query)
+      objs = Cassanova::Query.parse(results, table_name)
+      while results.last_page? == false
+        results = results.next_page
+        objs += Cassanova::Query.parse(results, table_name)
+        print "."
+      end
+      return objs
     end
 
     def count
@@ -168,6 +175,7 @@ module Cassanova
       cq = cq.gsub(selects, "COUNT(*)")
       Cassanova::Model.session.execute(cq).rows.first['count']
     end
+    alias_method :length, :count
 
     def destroy
       cq = compiled_query
